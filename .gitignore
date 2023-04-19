@@ -1,0 +1,16 @@
+# editors
+.vscode/
+_*/
+
+# build output
+*.mlir
+*.ll
+*.out
+
+# build dirs
+build/
+.cache/
+
+# perf
+perf.data
+perf.data.old
