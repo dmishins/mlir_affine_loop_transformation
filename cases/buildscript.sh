@@ -1,4 +1,4 @@
-POLY_PATH=../Polygeist/build/bin
+POLY_PATH=../../Polygeist/build/bin
 
 # echo "${POLY_PATH}/cgeist ${1}.c --raise-scf-to-affine -S > ${1}.mlir"
 ${POLY_PATH}/cgeist ${1}.c --raise-scf-to-affine -S > ${1}.mlir
