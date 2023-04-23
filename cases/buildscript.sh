@@ -1,13 +1,15 @@
+POLY_PATH=../../Polygeist/build/bin
+
 while getopts f:xh flag
 do
    case ${flag} in
         x) run="yes";;
-        f) item=${OPTARG};;
-        h) echo "Usage: $0 [-f <item>] [-x] [-h]"; exit 0;;
+        f) file=${OPTARG};;
+        h) echo "Usage: $0 [-f <file>] [-x] [-h]"; exit 0;;
    esac
 done
 
-POLY_PATH=../../Polygeist/build/bin
+item="${file%.c}"
 
 ${POLY_PATH}/cgeist ${item}.c --raise-scf-to-affine -S > ${item}.mlir
 
@@ -27,6 +29,6 @@ ${POLY_PATH}/clang ${item}.ll -o ${item}.out
 
 # check if we want to run
 if [ "$run" = "yes" ]; then
-    echo "Running ${item}"
+    echo "[[ Running <${item}> ]]"
     ./${item}.out
 fi
