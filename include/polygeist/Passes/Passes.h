@@ -2,6 +2,7 @@
 #define POLYGEIST_DIALECT_POLYGEIST_PASSES_H
 
 #include "mlir/Conversion/LLVMCommon/LoweringOptions.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Pass/Pass.h"
 #include <memory>
 namespace mlir {
@@ -10,6 +11,8 @@ class RewritePatternSet;
 class DominanceInfo;
 namespace polygeist {
 std::unique_ptr<Pass> testPrint();
+std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopTilingBtrPass(uint64_t);
+std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopTilingBtrPass();
 std::unique_ptr<Pass> createParallelLICMPass();
 std::unique_ptr<Pass> createMem2RegPass();
 std::unique_ptr<Pass> createLoopRestructurePass();

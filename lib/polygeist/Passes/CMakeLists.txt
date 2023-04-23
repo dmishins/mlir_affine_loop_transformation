@@ -1,5 +1,6 @@
 add_mlir_dialect_library(MLIRPolygeistTransforms
   TestPrint.cpp
+  LoopTiling.cpp
   AffineCFG.cpp
   AffineReduction.cpp
   CanonicalizeFor.cpp
