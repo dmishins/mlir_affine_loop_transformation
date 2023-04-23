@@ -1,20 +1,37 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
-#define N 10000
-#define M 10000
-#define P 10000
-#define TILE_SIZE 100
+#define N 3000
+#define M 3000
+#define P 3000
 
-void matmul(double **A, double **B, double **C, int n, int m, int p) {
-    for (int ii = 0; ii < n; ii += TILE_SIZE) {
-        for (int jj = 0; jj < p; jj += TILE_SIZE) {
-            for (int kk = 0; kk < m; kk += TILE_SIZE) {
-                for (int i = ii; i < ii + TILE_SIZE && i < n; i++) {
-                    for (int j = jj; j < jj + TILE_SIZE && j < p; j++) {
-                        double sum = 0;
-                        for (int k = kk; k < kk + TILE_SIZE && k < m; k++) {
+#define TILE_SIZE 1000
+
+int main() {
+    static int A[N][M];
+    static int B[M][P];
+    static int C[N][P];
+
+    // Fill matrices A and B with random values
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            A[i][j] = i + j;
+        }
+    }
+
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < P; j++) {
+            B[i][j] = i - j;
+        }
+    }
+
+    // Perform matrix multiplication with tiling
+    for (int ii = 0; ii < N; ii += TILE_SIZE) {
+        for (int jj = 0; jj < P; jj += TILE_SIZE) {
+            for (int kk = 0; kk < M; kk += TILE_SIZE) {
+                for (int i = ii; i < ii + TILE_SIZE && i < N; i++) {
+                    for (int j = jj; j < jj + TILE_SIZE && j < P; j++) {
+                        int sum = 0;
+                        for (int k = kk; k < kk + TILE_SIZE && k < M; k++) {
                             sum += A[i][k] * B[k][j];
                         }
                         C[i][j] += sum;
@@ -23,45 +40,6 @@ void matmul(double **A, double **B, double **C, int n, int m, int p) {
             }
         }
     }
-}
-
-double **allocate_matrix(int n, int m) {
-    double **matrix = (double **)malloc(n * sizeof(double *));
-    for (int i = 0; i < n; i++) {
-        matrix[i] = (double *)malloc(m * sizeof(double));
-    }
-    return matrix;
-}
-
-void free_matrix(double **matrix, int n) {
-    for (int i = 0; i < n; i++) {
-        free(matrix[i]);
-    }
-    free(matrix);
-}
-
-void fill_matrix(double **matrix, int n, int m) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            matrix[i][j] = (double)rand() / RAND_MAX;
-        }
-    }
-}
-
-int main() {
-    double **A = allocate_matrix(N, M);
-    double **B = allocate_matrix(M, P);
-    double **C = allocate_matrix(N, P);
-
-    srand(time(NULL));
-    fill_matrix(A, N, M);
-    fill_matrix(B, M, P);
-
-    matmul(A, B, C, N, M, P);
-
-    free_matrix(A, N);
-    free_matrix(B, M);
-    free_matrix(C, N);
 
     return 0;
 }
