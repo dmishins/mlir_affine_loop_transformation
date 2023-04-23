@@ -42,18 +42,6 @@ def SCFCPUify : Pass<"cpuify"> {
   ];
 }
 
-def ConvertParallelToGPU1 : Pass<"convert-parallel-to-gpu1"> {
-  let summary = "Convert parallel loops to gpu";
-  let constructor = "mlir::polygeist::createConvertParallelToGPUPass1()";
-  let dependentDialects = ["func::FuncDialect", "LLVM::LLVMDialect", "memref::MemRefDialect"];
-}
-
-def ConvertParallelToGPU2 : Pass<"convert-parallel-to-gpu2"> {
-  let summary = "Convert parallel loops to gpu";
-  let constructor = "mlir::polygeist::createConvertParallelToGPUPass2()";
-  let dependentDialects = ["func::FuncDialect", "LLVM::LLVMDialect", "memref::MemRefDialect"];
-}
-
 def InnerSerialization : Pass<"inner-serialize"> {
   let summary = "remove scf.barrier";
   let constructor = "mlir::polygeist::createInnerSerializationPass()";
@@ -103,10 +91,6 @@ def OpenMPOptPass : Pass<"openmp-opt"> {
 def LoopRestructure : Pass<"loop-restructure"> {
   let constructor = "mlir::polygeist::createLoopRestructurePass()";
   let dependentDialects = ["::mlir::scf::SCFDialect"];
-}
-
-def RemoveTrivialUse : Pass<"trivialuse"> {
-  let constructor = "mlir::polygeist::createRemoveTrivialUsePass()";
 }
 
 def ConvertPolygeistToLLVM : Pass<"convert-polygeist-to-llvm", "mlir::ModuleOp"> {

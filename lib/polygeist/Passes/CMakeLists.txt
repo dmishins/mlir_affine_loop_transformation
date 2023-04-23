@@ -10,11 +10,9 @@ add_mlir_dialect_library(MLIRPolygeistTransforms
   BarrierRemovalContinuation.cpp
   RaiseToAffine.cpp
   ParallelLower.cpp
-  TrivialUse.cpp
   ConvertPolygeistToLLVM.cpp
   InnerSerialization.cpp
   ForBreakToWhile.cpp
-  ConvertParallelToGPU.cpp
   SerializeToCubin.cpp
 
   ADDITIONAL_HEADER_DIRS
