@@ -1,7 +1,15 @@
+while getopts f:xh flag
+do
+   case ${flag} in
+        x) run="yes";;
+        f) item=${OPTARG};;
+        h) echo "Usage: $0 [-f <item>] [-x] [-h]"; exit 0;;
+   esac
+done
+
 POLY_PATH=../../Polygeist/build/bin
 
-# echo "${POLY_PATH}/cgeist ${1}.c --raise-scf-to-affine -S > ${1}.mlir"
-${POLY_PATH}/cgeist ${1}.c --raise-scf-to-affine -S > ${1}.mlir
+${POLY_PATH}/cgeist ${item}.c --raise-scf-to-affine -S > ${item}.mlir
 
 
 ${POLY_PATH}/mlir-opt -lower-affine \
@@ -12,10 +20,13 @@ ${POLY_PATH}/mlir-opt -lower-affine \
     -convert-func-to-llvm \
     -convert-cf-to-llvm \
     -reconcile-unrealized-casts \
-    ${1}.mlir | ${POLY_PATH}/mlir-translate --mlir-to-llvmir > ${1}.ll
+    ${item}.mlir | ${POLY_PATH}/mlir-translate --mlir-to-llvmir > ${item}.ll
 
 
-# echo "${POLY_PATH}/clang ${1}.ll -o ${1}.out"
-${POLY_PATH}/clang ${1}.ll -o ${1}.out
+${POLY_PATH}/clang ${item}.ll -o ${item}.out
 
-./${1}.out
+# check if we want to run
+if [ "$run" = "yes" ]; then
+    echo "Running ${item}"
+    ./${item}.out
+fi
