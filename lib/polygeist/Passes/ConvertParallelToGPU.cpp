@@ -36,11 +36,7 @@
 
 // TODO when we add other backends, we would need to to add an argument to the
 // pass which one we are compiling to to provide the appropriate error id
-#if POLYGEIST_ENABLE_CUDA
-#include <cuda.h>
-#else
 #define CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES 701
-#endif
 
 using namespace mlir;
 using namespace polygeist;
