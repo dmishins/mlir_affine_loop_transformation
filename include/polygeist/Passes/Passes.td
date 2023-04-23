@@ -3,6 +3,11 @@
 
 include "mlir/Pass/PassBase.td"
 
+def TestPrint : Pass<"test-print"> {
+  let summary = "Test print";
+  let constructor = "mlir::polygeist::testPrint()";
+}
+
 def AffineCFG : Pass<"affine-cfg"> {
   let summary = "Replace scf.if and similar with affine.if";
   let constructor = "mlir::polygeist::replaceAffineCFGPass()";

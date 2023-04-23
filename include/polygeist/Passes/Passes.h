@@ -9,6 +9,7 @@ class PatternRewriter;
 class RewritePatternSet;
 class DominanceInfo;
 namespace polygeist {
+std::unique_ptr<Pass> testPrint();
 std::unique_ptr<Pass> createParallelLICMPass();
 std::unique_ptr<Pass> createMem2RegPass();
 std::unique_ptr<Pass> createLoopRestructurePass();
