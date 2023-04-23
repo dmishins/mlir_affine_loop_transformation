@@ -8,10 +8,10 @@ def TestPrint : Pass<"test-print"> {
   let constructor = "mlir::polygeist::testPrint()";
 }
 
-// def AffineLoopTilingBtr : Pass<"affine-loop-tiling-btr"> {
-//   let summary = "Affine loop tiling but better";
-//   let constructor = "mlir::polygeist::runAffineLoopTilingBtr()";
-// }
+def AffineLoopInterleave : Pass<"affine-loop-interleave", "func::FuncOp"> {
+  let summary = "Tile affine loop nests";
+  let constructor = "mlir::polygeist::createLoopInterleavePass()";
+}
 
 def AffineLoopTilingBtr : Pass<"affine-loop-tile-btr", "func::FuncOp"> {
   let summary = "Tile affine loop nests";

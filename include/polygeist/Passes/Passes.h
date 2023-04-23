@@ -13,6 +13,7 @@ namespace polygeist {
 std::unique_ptr<Pass> testPrint();
 std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopTilingBtrPass(uint64_t);
 std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopTilingBtrPass();
+std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopInterleavePass();
 std::unique_ptr<Pass> createParallelLICMPass();
 std::unique_ptr<Pass> createMem2RegPass();
 std::unique_ptr<Pass> createLoopRestructurePass();
