@@ -60,7 +60,7 @@ mlir::loopinterchange::createLoopInterleavePass() {
 
 void AffineLoopInterleave::runOnOperation() {
   // Bands of loops to tile.
-  LLVM_DEBUG(llvm::outs() << "Hello World, welcome to our pass! \n");
+  LLVM_DEBUG(llvm::dbgs() << "Hello World, welcome to our pass! \n");
 
   func::FuncOp func = getOperation();
     func.walk([&](Operation *op) {
