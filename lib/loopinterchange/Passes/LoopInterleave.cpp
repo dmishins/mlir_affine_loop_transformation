@@ -63,7 +63,7 @@ void AffineLoopInterleave::runOnOperation() {
   LLVM_DEBUG(llvm::dbgs() << "Hello World, welcome to our pass! \n");
 
   func::FuncOp func = getOperation();
-    func.walk([&](Operation *op) {
+  func.walk([&](Operation *op) {
     if (auto affineForOp = dyn_cast<AffineForOp>(op)) {
       LLVM_DEBUG(llvm::outs() << "Yay! A loop!:" << op->getName() << "\n");
       if (op->template getParentOfType<AffineForOp>()) {
@@ -81,33 +81,26 @@ void AffineLoopInterleave::runOnOperation() {
                                      "no function calls/issues! \n");
           bool valid = true;
 
-          affineForOp.walk([&](Operation *op) {
-            if (auto affineForOp = dyn_cast<AffineForOp>(op)) {
+          affineForOp.walk([&](Operation *mop) {
+            if (mop->getName().getStringRef() == "llvm.call") {
               valid = false;
-            } else if (auto affineForOp = dyn_cast<AffineLoadOp>(op)) {
-              valid = false;
-            } else if (auto affineForOp = dyn_cast<AffineStoreOp>(op)) {
-              valid = false;
-            } else if (auto affineForOp = dyn_cast<AffineApplyOp>(op)) {
-              valid = false;
-            } else if (auto affineForOp = dyn_cast<AffineBinaryOpExpr>(op)) {
-              valid = false;
+              LLVM_DEBUG(llvm::dbgs() << mop->getName() << " : "
+                                      << mop->getDialect() << " not valid \n");
             }
           });
           if (valid) {
             permuteLoops(loops, map);
+            LLVM_DEBUG(llvm::dbgs() << "All good, permuting\n ");
           }
+        } else {
+          LLVM_DEBUG(llvm::dbgs() << "Can't permute :( \n");
         }
-
       } else {
-        LLVM_DEBUG(llvm::dbgs() << "Can't permute :( \n");
+        LLVM_DEBUG(llvm::dbgs() << "not 2 depth :( \n");
       }
+    } else {
+      LLVM_DEBUG(llvm::dbgs()
+                 << "Operation is not a loop:" << op->getName() << "\n");
     }
-
-      }
-      else{
-    LLVM_DEBUG(llvm::outs()
-               << "Operation is not a loop:" << op->getName() << "\n");
-      }
-});
+  });
 }
