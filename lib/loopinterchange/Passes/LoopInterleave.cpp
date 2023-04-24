@@ -47,6 +47,18 @@ struct AffineLoopInterleave
     : public AffineLoopInterleaveBase<AffineLoopInterleave> {
   AffineLoopInterleave() = default;
   void runOnOperation() override;
+
+  bool isLoopInterchangeable(AffineForOp forOp) {
+    bool valid = true;
+    forOp.walk([&](Operation *op) {
+      if (op->getName().getStringRef() == "llvm.call") {
+        valid = false;
+        LLVM_DEBUG(llvm::dbgs() << op->getName() << " : " << op->getDialect()
+                                << " not valid \n");
+      }
+    });
+    return valid;
+  }
 };
 
 } // namespace
@@ -65,10 +77,7 @@ void AffineLoopInterleave::runOnOperation() {
   func::FuncOp func = getOperation();
   func.walk([&](Operation *op) {
     if (auto affineForOp = dyn_cast<AffineForOp>(op)) {
-      LLVM_DEBUG(llvm::outs() << "Yay! A loop!:" << op->getName() << "\n");
-      if (op->template getParentOfType<AffineForOp>()) {
-        // return;
-      }
+      LLVM_DEBUG(llvm::dbgs() << "Yay! A loop!:" << op->getName() << "\n");
       SmallVector<AffineForOp, 4> loops;
       SmallVector<unsigned int, 4> map{1, 0};
 
@@ -79,16 +88,7 @@ void AffineLoopInterleave::runOnOperation() {
         if (isValidLoopInterchangePermutation(loops, map)) {
           LLVM_DEBUG(llvm::dbgs() << "valid to permute, but only if there are "
                                      "no function calls/issues! \n");
-          bool valid = true;
-
-          affineForOp.walk([&](Operation *mop) {
-            if (mop->getName().getStringRef() == "llvm.call") {
-              valid = false;
-              LLVM_DEBUG(llvm::dbgs() << mop->getName() << " : "
-                                      << mop->getDialect() << " not valid \n");
-            }
-          });
-          if (valid) {
+          if (isLoopInterchangeable(affineForOp)) {
             permuteLoops(loops, map);
             LLVM_DEBUG(llvm::dbgs() << "All good, permuting\n ");
           }
