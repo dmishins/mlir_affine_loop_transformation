@@ -65,11 +65,33 @@ void AffineLoopInterleave::runOnOperation() {
     func::FuncOp func = getOperation();
     func.walk([&](Operation *op) {
       if (auto affineForOp = dyn_cast<AffineForOp>(op)){
-        LLVM_DEBUG(llvm::outs() << "Yay! A loop!:" << func.getName() <<  "\n");
+        LLVM_DEBUG(llvm::outs() << "Yay! A loop!:" << op->getName() <<  "\n");
+        if (op->template getParentOfType<AffineForOp>()){
+          //return;
+        }
+        SmallVector<AffineForOp, 4> loops;
+        SmallVector<unsigned int, 4> map{1,0};
+
+        getPerfectlyNestedLoops(loops, affineForOp);
+        LLVM_DEBUG(llvm::dbgs()
+                  << "found a perfect nest of depth " << loops.size() << '\n');
+        if(loops.size() == 2){
+          if(isValidLoopInterchangePermutation(loops, map)){
+            LLVM_DEBUG(llvm::dbgs()
+                  << "valid to permute! \n");
+             permuteLoops(loops, map);
+
+          }
+          else{
+            LLVM_DEBUG(llvm::dbgs()
+                  << "Can't permute :( \n");
+
+          }
+        }
 
       }
       else{
-        LLVM_DEBUG(llvm::outs() << "Operation is not a loop:" << func.getName() <<  "\n");
+        LLVM_DEBUG(llvm::outs() << "Operation is not a loop:" << op->getName() <<  "\n");
       }
     });
   
