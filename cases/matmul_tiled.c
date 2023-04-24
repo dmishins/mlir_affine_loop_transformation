@@ -1,10 +1,10 @@
 #include <stdio.h>
 
-#define N 3000
-#define M 3000
-#define P 3000
+#define N 2400
+#define M 2400
+#define P 2400
 
-#define TILE_SIZE 1000
+#define TILE_SIZE 120
 
 int main() {
     static int A[N][M];
