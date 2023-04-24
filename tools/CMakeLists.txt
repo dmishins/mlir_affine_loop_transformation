@@ -1,1 +1,1 @@
-add_subdirectory(affineswap-opt)
+add_subdirectory(loop-opt)

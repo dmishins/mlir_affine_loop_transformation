@@ -1,4 +1,4 @@
-//===- polygeist-opt.cpp - The polygeist-opt driver -----------------------===//
+//===- loopinterchange-opt.cpp - The loopinterchange-opt driver -----------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements the 'polygeist-opt' tool, which is the polygeist analog
+// This file implements the 'loopinterchange-opt' tool, which is the loopinterchange analog
 // of mlir-opt, used to drive compiler passes, e.g. for testing.
 //
 //===----------------------------------------------------------------------===//
@@ -29,8 +29,7 @@
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 #include "mlir/Transforms/Passes.h"
 
-#include "polygeist/Dialect.h"
-#include "polygeist/Passes/Passes.h"
+#include "loopinterchange/Passes/Passes.h"
 
 using namespace mlir;
 
@@ -59,9 +58,7 @@ int main(int argc, char **argv) {
   registry.insert<mlir::math::MathDialect>();
   registry.insert<mlir::DLTIDialect>();
 
-  registry.insert<mlir::polygeist::PolygeistDialect>();
-
-  mlir::registerpolygeistPasses();
+  mlir::registerloopinterchangePasses();
 
   // Register the standard passes we want.
   mlir::registerCSEPass();
@@ -106,6 +103,6 @@ int main(int argc, char **argv) {
   });
 
   return mlir::failed(mlir::MlirOptMain(
-      argc, argv, "Polygeist modular optimizer driver", registry,
+      argc, argv, "LoopInterChange modular optimizer driver", registry,
       /*preloadDialectsInContext=*/true));
 }

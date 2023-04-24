@@ -17,11 +17,11 @@
 #include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/PatternMatch.h"
 
-#include "polygeist/Passes/Passes.h"
+#include "loopinterchange/Passes/Passes.h"
 
 using namespace mlir;
 using namespace mlir::scf;
-using namespace mlir::polygeist;
+using namespace mlir::loopinterchange;
 
 namespace {
 struct TestPrint : public TestPrintBase<TestPrint> {
@@ -98,6 +98,6 @@ struct TestPrint : public TestPrintBase<TestPrint> {
 };
 } // namespace
 
-std::unique_ptr<Pass> mlir::polygeist::testPrint() {
+std::unique_ptr<Pass> mlir::loopinterchange::testPrint() {
   return std::make_unique<TestPrint>();
 }

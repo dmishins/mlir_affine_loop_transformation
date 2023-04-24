@@ -14,6 +14,30 @@ item="${file%.c}"
 ${POLY_PATH}/cgeist ${item}.c --raise-scf-to-affine -S > ${item}.mlir
 
 
+echo "../build/bin/loop-opt -affine-loop-interleave ${item}.mlir > ${item}_transformed.mlir"
+../build/bin/loop-opt -affine-loop-interleave ${item}.mlir > ${item}_transformed.mlir
+
+${POLY_PATH}/mlir-opt -lower-affine \
+    -convert-scf-to-cf \
+    -memref-expand \
+    -convert-memref-to-llvm \
+    -convert-vector-to-llvm \
+    -convert-func-to-llvm \
+    -convert-cf-to-llvm \
+    -reconcile-unrealized-casts \
+    ${item}_transformed.mlir | ${POLY_PATH}/mlir-translate --mlir-to-llvmir > ${item}_transformed.ll
+
+
+# echo "${POLY_PATH}/mlir-opt -lower-affine \
+#     -convert-scf-to-cf \
+#     -memref-expand \
+#     -convert-memref-to-llvm \
+#     -convert-vector-to-llvm \
+#     -convert-func-to-llvm \
+#     -convert-cf-to-llvm \
+#     -reconcile-unrealized-casts \
+#     ${item}.mlir | ${POLY_PATH}/mlir-translate --mlir-to-llvmir > ${item}_transformed.ll"
+
 ${POLY_PATH}/mlir-opt -lower-affine \
     -convert-scf-to-cf \
     -memref-expand \

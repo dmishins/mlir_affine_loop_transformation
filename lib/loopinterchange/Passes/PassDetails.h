@@ -1,4 +1,4 @@
-//===- PassDetails.h - polygeist pass class details ----------------*- C++
+//===- PassDetails.h - loopinterchange pass class details ----------------*- C++
 //-*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -7,33 +7,28 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// Stuff shared between the different polygeist passes.
+// Stuff shared between the different loopinterchange passes.
 //
 //===----------------------------------------------------------------------===//
 
 // clang-tidy seems to expect the absolute path in the header guard on some
 // systems, so just disable it.
 // NOLINTNEXTLINE(llvm-header-guard)
-#ifndef DIALECT_POLYGEIST_TRANSFORMS_PASSDETAILS_H
-#define DIALECT_POLYGEIST_TRANSFORMS_PASSDETAILS_H
+#ifndef DIALECT_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS_H
+#define DIALECT_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS_H
 
 #include "mlir/Pass/Pass.h"
-#include "polygeist/Ops.h"
-#include "polygeist/Passes/Passes.h"
+#include "loopinterchange/Passes/Passes.h"
 
 namespace mlir {
 class FunctionOpInterface;
-// Forward declaration from Dialect.h
-template <typename ConcreteDialect>
-void registerDialect(DialectRegistry &registry);
-namespace polygeist {
 
-class PolygeistDialect;
+namespace loopinterchange {
 
 #define GEN_PASS_CLASSES
-#include "polygeist/Passes/Passes.h.inc"
+#include "loopinterchange/Passes/Passes.h.inc"
 
-} // namespace polygeist
+} // namespace loopinterchange
 } // namespace mlir
 
-#endif // DIALECT_POLYGEIST_TRANSFORMS_PASSDETAILS_H
+#endif // DIALECT_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS_H

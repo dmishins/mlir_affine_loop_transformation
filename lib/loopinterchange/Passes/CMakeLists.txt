@@ -1,29 +1,13 @@
-add_mlir_dialect_library(MLIRPolygeistTransforms
+add_mlir_dialect_library(MLIRLoopInterchangeTransforms
   TestPrint.cpp
   LoopTiling.cpp
   LoopInterleave.cpp
-  AffineCFG.cpp
-  AffineReduction.cpp
-  CanonicalizeFor.cpp
-  LoopRestructure.cpp
-  Mem2Reg.cpp
-  ParallelLoopDistribute.cpp
-  ParallelLICM.cpp
-  OpenMPOpt.cpp
-  BarrierRemovalContinuation.cpp
-  RaiseToAffine.cpp
-  ParallelLower.cpp
-  ConvertPolygeistToLLVM.cpp
-  InnerSerialization.cpp
-  ForBreakToWhile.cpp
-  SerializeToCubin.cpp
 
   ADDITIONAL_HEADER_DIRS
   ${MLIR_MAIN_INCLUDE_DIR}/mlir/Dialect/Affine
 
   DEPENDS
-  MLIRPolygeistOpsIncGen
-  MLIRPolygeistPassIncGen
+  MLIRLoopInterchangePassIncGen
 
   LINK_LIBS PUBLIC
   MLIRAffineDialect
@@ -40,7 +24,6 @@ add_mlir_dialect_library(MLIRPolygeistTransforms
   MLIRMemRefDialect
   MLIRNVVMDialect
   MLIRPass
-  MLIRPolygeist
   MLIRSideEffectInterfaces
   MLIRSCFToControlFlow
   MLIRTargetLLVMIRImport

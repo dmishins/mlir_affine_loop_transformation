@@ -33,10 +33,10 @@ namespace mlir {
 
 #include "PassDetails.h"
 
-#include "polygeist/Passes/Passes.h"
+#include "loopinterchange/Passes/Passes.h"
 
 using namespace mlir;
-using namespace mlir::polygeist;
+using namespace mlir::loopinterchange;
 
 #define DEBUG_TYPE "affine-loop-tile"
 
@@ -66,10 +66,10 @@ struct AffineLoopTilingBtr : public AffineLoopTilingBtrBase<AffineLoopTilingBtr>
 /// Creates a pass to perform loop tiling on all suitable loop nests of a
 /// Function.
 std::unique_ptr<OperationPass<func::FuncOp>>
-mlir::polygeist::createLoopTilingBtrPass(uint64_t cacheSizeBytes) {
+mlir::loopinterchange::createLoopTilingBtrPass(uint64_t cacheSizeBytes) {
   return std::make_unique<AffineLoopTilingBtr>(cacheSizeBytes);
 }
-std::unique_ptr<OperationPass<func::FuncOp>> mlir::polygeist::createLoopTilingBtrPass() {
+std::unique_ptr<OperationPass<func::FuncOp>> mlir::loopinterchange::createLoopTilingBtrPass() {
   return std::make_unique<AffineLoopTilingBtr>();
 }
 

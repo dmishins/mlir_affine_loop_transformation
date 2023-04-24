@@ -33,10 +33,10 @@ namespace mlir {
 
 #include "PassDetails.h"
 
-#include "polygeist/Passes/Passes.h"
+#include "loopinterchange/Passes/Passes.h"
 
 using namespace mlir;
-using namespace mlir::polygeist;
+using namespace mlir::loopinterchange;
 
 #define DEBUG_TYPE "affine-loop-interleave"
 
@@ -53,7 +53,8 @@ struct AffineLoopInterleave : public AffineLoopInterleaveBase<AffineLoopInterlea
 
 /// Creates a pass to perform loop tiling on all suitable loop nests of a
 /// Function.
-std::unique_ptr<OperationPass<func::FuncOp>> mlir::polygeist::createLoopInterleavePass() {
+std::unique_ptr<OperationPass<func::FuncOp>>
+mlir::loopinterchange::createLoopInterleavePass() {
   return std::make_unique<AffineLoopInterleave>();
 }
 
