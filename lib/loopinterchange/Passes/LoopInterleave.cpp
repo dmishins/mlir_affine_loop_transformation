@@ -43,10 +43,10 @@ using namespace mlir::loopinterchange;
 namespace {
 
 /// A pass to perform loop tiling on all suitable loop nests of a Function.
-struct AffineLoopInterleave : public AffineLoopInterleaveBase<AffineLoopInterleave> {
+struct AffineLoopInterleave
+    : public AffineLoopInterleaveBase<AffineLoopInterleave> {
   AffineLoopInterleave() = default;
   void runOnOperation() override;
-
 };
 
 } // namespace
@@ -60,40 +60,54 @@ mlir::loopinterchange::createLoopInterleavePass() {
 
 void AffineLoopInterleave::runOnOperation() {
   // Bands of loops to tile.
-  llvm::outs() << "Hello World, welcome to our pass! \n";
+  LLVM_DEBUG(llvm::outs() << "Hello World, welcome to our pass! \n");
 
-    func::FuncOp func = getOperation();
+  func::FuncOp func = getOperation();
     func.walk([&](Operation *op) {
-      if (auto affineForOp = dyn_cast<AffineForOp>(op)){
-        LLVM_DEBUG(llvm::outs() << "Yay! A loop!:" << op->getName() <<  "\n");
-        if (op->template getParentOfType<AffineForOp>()){
-          //return;
-        }
-        SmallVector<AffineForOp, 4> loops;
-        SmallVector<unsigned int, 4> map{1,0};
+    if (auto affineForOp = dyn_cast<AffineForOp>(op)) {
+      LLVM_DEBUG(llvm::outs() << "Yay! A loop!:" << op->getName() << "\n");
+      if (op->template getParentOfType<AffineForOp>()) {
+        // return;
+      }
+      SmallVector<AffineForOp, 4> loops;
+      SmallVector<unsigned int, 4> map{1, 0};
 
-        getPerfectlyNestedLoops(loops, affineForOp);
-        LLVM_DEBUG(llvm::dbgs()
-                  << "found a perfect nest of depth " << loops.size() << '\n');
-        if(loops.size() == 2){
-          if(isValidLoopInterchangePermutation(loops, map)){
-            LLVM_DEBUG(llvm::dbgs()
-                  << "valid to permute! \n");
-             permuteLoops(loops, map);
+      getPerfectlyNestedLoops(loops, affineForOp);
+      LLVM_DEBUG(llvm::dbgs()
+                 << "found a perfect nest of depth " << loops.size() << '\n');
+      if (loops.size() == 2) {
+        if (isValidLoopInterchangePermutation(loops, map)) {
+          LLVM_DEBUG(llvm::dbgs() << "valid to permute, but only if there are "
+                                     "no function calls/issues! \n");
+          bool valid = true;
 
+          affineForOp.walk([&](Operation *op) {
+            if (auto affineForOp = dyn_cast<AffineForOp>(op)) {
+              valid = false;
+            } else if (auto affineForOp = dyn_cast<AffineLoadOp>(op)) {
+              valid = false;
+            } else if (auto affineForOp = dyn_cast<AffineStoreOp>(op)) {
+              valid = false;
+            } else if (auto affineForOp = dyn_cast<AffineApplyOp>(op)) {
+              valid = false;
+            } else if (auto affineForOp = dyn_cast<AffineBinaryOpExpr>(op)) {
+              valid = false;
+            }
+          });
+          if (valid) {
+            permuteLoops(loops, map);
           }
-          else{
-            LLVM_DEBUG(llvm::dbgs()
-                  << "Can't permute :( \n");
-
-          }
         }
+
+      } else {
+        LLVM_DEBUG(llvm::dbgs() << "Can't permute :( \n");
+      }
+    }
 
       }
       else{
-        LLVM_DEBUG(llvm::outs() << "Operation is not a loop:" << op->getName() <<  "\n");
+    LLVM_DEBUG(llvm::outs()
+               << "Operation is not a loop:" << op->getName() << "\n");
       }
-    });
-  
+});
 }
-
