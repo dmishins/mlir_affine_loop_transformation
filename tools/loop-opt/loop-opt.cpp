@@ -29,7 +29,7 @@
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 #include "mlir/Transforms/Passes.h"
 
-#include "loopinterchange/Passes/Passes.h"
+#include "loopinterchange/Passes.h"
 
 using namespace mlir;
 

@@ -1,7 +1,6 @@
-#ifndef LOOPINTERCHANGE_DIALECT_LOOPINTERCHANGE_PASSES_H
-#define LOOPINTERCHANGE_DIALECT_LOOPINTERCHANGE_PASSES_H
+#ifndef LOOPINTERCHANGE_PASSES_H
+#define LOOPINTERCHANGE_PASSES_H
 
-#include "mlir/Conversion/LLVMCommon/LoweringOptions.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Pass/Pass.h"
 #include <memory>
@@ -14,16 +13,10 @@ std::unique_ptr<Pass> testPrint();
 std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopTilingBtrPass(uint64_t);
 std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopTilingBtrPass();
 std::unique_ptr<OperationPass<mlir::func::FuncOp>> createLoopInterleavePass();
-
-void populateForBreakToWhilePatterns(RewritePatternSet &patterns);
 } // namespace loopinterchange
 } // namespace mlir
 
 namespace mlir {
-// Forward declaration from Dialect.h
-template <typename ConcreteDialect>
-void registerDialect(DialectRegistry &registry);
-
 namespace arith {
 class ArithDialect;
 } // end namespace arith
@@ -50,4 +43,4 @@ class LLVMDialect;
 
 } // end namespace mlir
 
-#endif // LOOPINTERCHANGE_DIALECT_LOOPINTERCHANGE_PASSES_H
+#endif // LOOPINTERCHANGE_PASSES_H

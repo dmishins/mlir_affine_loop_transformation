@@ -11,14 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-// clang-tidy seems to expect the absolute path in the header guard on some
-// systems, so just disable it.
-// NOLINTNEXTLINE(llvm-header-guard)
-#ifndef DIALECT_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS_H
-#define DIALECT_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS_H
+#ifndef LIB_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS
+#define LIB_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS
 
 #include "mlir/Pass/Pass.h"
-#include "loopinterchange/Passes/Passes.h"
+#include "loopinterchange/Passes.h"
 
 namespace mlir {
 class FunctionOpInterface;
@@ -26,9 +23,9 @@ class FunctionOpInterface;
 namespace loopinterchange {
 
 #define GEN_PASS_CLASSES
-#include "loopinterchange/Passes/Passes.h.inc"
+#include "loopinterchange/Passes.h.inc"
 
 } // namespace loopinterchange
 } // namespace mlir
 
-#endif // DIALECT_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS_H
+#endif /* LIB_LOOPINTERCHANGE_TRANSFORMS_PASSDETAILS */

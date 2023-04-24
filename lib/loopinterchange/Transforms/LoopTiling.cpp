@@ -33,8 +33,6 @@ namespace mlir {
 
 #include "PassDetails.h"
 
-#include "loopinterchange/Passes/Passes.h"
-
 using namespace mlir;
 using namespace mlir::loopinterchange;
 

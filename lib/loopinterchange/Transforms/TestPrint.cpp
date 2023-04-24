@@ -1,11 +1,3 @@
-//===- ForBreakToWhile.cpp - scf.for(scf.if) to scf.while lowering --------===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-
 #include "PassDetails.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
 
@@ -16,8 +8,6 @@
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/PatternMatch.h"
-
-#include "loopinterchange/Passes/Passes.h"
 
 using namespace mlir;
 using namespace mlir::scf;
