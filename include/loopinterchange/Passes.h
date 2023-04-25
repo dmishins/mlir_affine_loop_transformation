@@ -39,7 +39,7 @@ class LLVMDialect;
 }
 
 #define GEN_PASS_REGISTRATION
-#include "loopinterchange/Passes/Passes.h.inc"
+#include "loopinterchange/Passes.h.inc"
 
 } // end namespace mlir
 
