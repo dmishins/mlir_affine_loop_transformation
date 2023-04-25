@@ -118,15 +118,14 @@ mlir::loopinterchange::createLoopInterleavePass() {
 
 void AffineLoopInterleave::runOnOperation() {
   // Bands of loops to tile.
-  LLVM_DEBUG(llvm::dbgs() << ">> Hello World, welcome to our pass!\n");
+  LLVM_DEBUG(llvm::dbgs() << ">> Performing loop interchange optimization\n");
 
   func::FuncOp func = getOperation();
   func.walk([&](Operation *op) {
     if (auto affineForOp = dyn_cast<AffineForOp>(op)) {
-      LLVM_DEBUG(llvm::dbgs() << ">> Yay! A loop!: " << op->getName() << "at"
+      LLVM_DEBUG(llvm::dbgs() << ">> Found " << op->getName() << "at"
                               << op->getLoc() << "\n");
       SmallVector<AffineForOp, 4> loops;
-      SmallVector<unsigned int, 4> map;
       ForArgs forArgs;
       IMap imapBaseLine;
 
@@ -141,7 +140,6 @@ void AffineLoopInterleave::runOnOperation() {
 
       // Setup the map and the induction vars.
       for (unsigned int i = 0; i < loops.size(); i++) {
-        map.push_back(i);
         auto loc = loops[i].getInductionVar().getLoc();
         // LLVM_DEBUG(llvm::dbgs() << ">> Induction var: " << loc << "\n");
         forArgs.push(loc);
@@ -174,38 +172,41 @@ void AffineLoopInterleave::runOnOperation() {
           break;
         }
       }
+      // Check if the accesses are aligned, and only permute if they are.
       if (!aligned || !imapBaseLine.filled) {
-        LLVM_DEBUG(llvm::dbgs() << ">> Not aligned, skipping\n");
+        LLVM_DEBUG(llvm::dbgs() << ">> Accesses are not aligned, skipping\n");
         return;
       }
 
+      LLVM_DEBUG(
+          llvm::dbgs()
+          << ">> All accesses are aligned, producing the new affine map:\n");
+
       // Changing the loop interleaving map.
-      auto &imap = imapBaseLine.map;
-      // for (unsigned int i = 0; i < imap.size(); i++) {
-      //   map[imap[i]] = i;
-      // }
-      map = imap;
+      auto &affineMap = imapBaseLine.map;
 
-      // Final output.
-      LLVM_DEBUG(llvm::dbgs() << ">> Final map: \n");
-      for (unsigned int i = 0; i < map.size(); i++) {
-        LLVM_DEBUG(llvm::dbgs() << ">> " << i << " -> " << map[i] << "\n");
+      for (unsigned int i = 0; i < affineMap.size(); i++) {
+        LLVM_DEBUG(llvm::dbgs()
+                   << ">> " << i << " -> " << affineMap[i] << "\n");
       }
 
-      // Check if the result permutation is valid.
-      if (isValidLoopInterchangePermutation(loops, map)) {
-        LLVM_DEBUG(llvm::dbgs() << ">> Valid to permute, but only if there are "
-                                   "no function calls/issues! \n");
-        if (isLoopInterchangeable(affineForOp)) {
-          permuteLoops(loops, map);
-          LLVM_DEBUG(llvm::dbgs() << ">> All good, permuting\n");
-        }
-      } else {
-        LLVM_DEBUG(llvm::dbgs() << ">> Failed dependency check, can't permute :( \n");
+      // Check if the result permutation is valid dependency-wise.
+      if (!isValidLoopInterchangePermutation(loops, affineMap)) {
+        LLVM_DEBUG(llvm::dbgs()
+                   << ">> Failed dependency check, can't permute :( \n");
+        return;
       }
-    } else {
-      // LLVM_DEBUG(llvm::dbgs()
-      //            << ">> Operation is not a loop: " << op->getName() << "\n");
+
+      // Check if the loop has side effects.
+      if (!isLoopInterchangeable(affineForOp)) {
+        LLVM_DEBUG(llvm::dbgs()
+                   << ">> Unable to permute due to side effects found\n");
+        return;
+      }
+
+      // Finally, permute the loops.
+      LLVM_DEBUG(llvm::dbgs() << ">> All good, permuting :)\n");
+      permuteLoops(loops, affineMap);
     }
   });
 }
