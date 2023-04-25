@@ -30,11 +30,6 @@ using namespace mlir::loopinterchange;
 
 #define DEBUG_TYPE "affine-loop-interleave"
 
-// For debugging purposes.
-#undef LLVM_DEBUG
-#define LLVM_DEBUG(X)                                                          \
-  { X; }
-
 namespace {
 
 /// A pass to perform loop tiling on all suitable loop nests of a Function.
@@ -123,7 +118,7 @@ void AffineLoopInterleave::runOnOperation() {
   func::FuncOp func = getOperation();
   func.walk([&](Operation *op) {
     if (auto affineForOp = dyn_cast<AffineForOp>(op)) {
-      LLVM_DEBUG(llvm::dbgs() << ">> Found " << op->getName() << "at"
+      LLVM_DEBUG(llvm::dbgs() << ">> Found " << op->getName() << " at "
                               << op->getLoc() << "\n");
       SmallVector<AffineForOp, 4> loops;
       ForArgs forArgs;
