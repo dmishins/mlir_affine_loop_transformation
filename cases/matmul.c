@@ -1,6 +1,6 @@
-#define N 3000
-#define M 3000
-#define P 3000
+#define N 2000
+#define M 1000
+#define P 2000
 
 int main() {
     static int A[N][M];
