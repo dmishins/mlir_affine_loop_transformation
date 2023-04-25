@@ -13,6 +13,7 @@
 #include "mlir/IR/BlockAndValueMapping.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/Location.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
@@ -29,6 +30,11 @@ using namespace mlir::loopinterchange;
 
 #define DEBUG_TYPE "affine-loop-interleave"
 
+// For debugging purposes.
+#undef LLVM_DEBUG
+#define LLVM_DEBUG(X)                                                          \
+  { X; }
+
 namespace {
 
 /// A pass to perform loop tiling on all suitable loop nests of a Function.
@@ -37,13 +43,62 @@ struct AffineLoopInterleave
   AffineLoopInterleave() = default;
   void runOnOperation() override;
 
+  struct ForArgs {
+    SmallVector<mlir::Location, 4> locs;
+    void push(mlir::Location loc) { locs.push_back(loc); }
+    unsigned int query(mlir::Location loc) {
+      for (unsigned int i = 0; i < locs.size(); i++) {
+        if (locs[i] == loc) {
+          return i;
+        }
+      }
+      return -1;
+    }
+  } forArgs;
+
+  struct IMap {
+    SmallVector<unsigned int, 4> map;
+    bool filled = false;
+    bool setOrCheck(SmallVector<unsigned int, 4> other) {
+      if (!filled) {
+        filled = true;
+        map = other;
+        return true;
+      }
+      if (map.size() != other.size()) {
+        return false;
+      }
+      for (unsigned int i = 0; i < map.size(); i++) {
+        if (map[i] != other[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
+  } imapBaseLine;
+
+  bool isIMapAligned(mlir::Operation::operand_range indices) {
+    SmallVector<unsigned int, 4> imap;
+    for (auto const index : indices) {
+      unsigned int arg = forArgs.query(index.getLoc());
+      // LLVM_DEBUG(llvm::dbgs() << ">> Index: \%arg" << arg << "\n");
+      if (arg == (unsigned)-1) {
+        LLVM_DEBUG(llvm::dbgs() << ">> Index not found in for args\n");
+        exit(2);
+      }
+      imap.push_back(arg);
+    }
+    return imapBaseLine.setOrCheck(imap);
+  }
+
   bool isLoopInterchangeable(AffineForOp forOp) {
     bool valid = true;
     forOp.walk([&](Operation *op) {
       if (op->getName().getStringRef() == "llvm.call") {
         valid = false;
-        LLVM_DEBUG(llvm::dbgs() << op->getName() << " : " << op->getDialect()
-                                << " not valid \n");
+        LLVM_DEBUG(llvm::dbgs()
+                   << "Found " << op->getName() << " : " << op->getDialect()
+                   << " which is not valid \n");
       }
     });
     return valid;
@@ -59,13 +114,9 @@ mlir::loopinterchange::createLoopInterleavePass() {
   return std::make_unique<AffineLoopInterleave>();
 }
 
-#undef LLVM_DEBUG
-#define LLVM_DEBUG(X)                                                          \
-  { X; }
-
 void AffineLoopInterleave::runOnOperation() {
   // Bands of loops to tile.
-  LLVM_DEBUG(llvm::dbgs() << ">> Hello World, welcome to our pass! \n");
+  LLVM_DEBUG(llvm::dbgs() << ">> Hello World, welcome to our pass!\n");
 
   func::FuncOp func = getOperation();
   func.walk([&](Operation *op) {
@@ -74,6 +125,7 @@ void AffineLoopInterleave::runOnOperation() {
       SmallVector<AffineForOp, 4> loops;
       SmallVector<unsigned int, 4> map;
 
+      // Get the perfectly nested loops.
       getPerfectlyNestedLoops(loops, affineForOp);
       if (loops.size() < 2) {
         LLVM_DEBUG(llvm::dbgs() << ">> Not a nested loop, skipping\n");
@@ -82,8 +134,10 @@ void AffineLoopInterleave::runOnOperation() {
       LLVM_DEBUG(llvm::dbgs() << ">> Found a perfect nest of depth "
                               << loops.size() << '\n');
 
+      // Setup the map and the induction vars.
       for (unsigned int i = 0; i < loops.size(); i++) {
         map.push_back(i);
+        forArgs.push(loops[i].getInductionVar().getLoc());
       }
 
       // Check which permutation is better.
@@ -93,33 +147,42 @@ void AffineLoopInterleave::runOnOperation() {
         return;
       }
       auto &block = body.front();
+      bool aligned = true;
       for (auto &op : block) {
+        bool alignedCurrent = true;
         if (auto aop = dyn_cast<AffineLoadOp>(op)) {
           LLVM_DEBUG(llvm::dbgs()
                      << ">> Found an affine load expr: " << aop << "\n");
-          auto affineMapAttr = aop.getAffineMapAttr();
-          LLVM_DEBUG(llvm::dbgs()
-                     << ">> Affine map attr: " << affineMapAttr << "\n");
-          // auto indices = aop.getIndices();
-          // for (auto const index : indices) {
-          //   LLVM_DEBUG(llvm::dbgs() << ">> Index: " << index << "\n");
-          //   // if (auto expr = index.dyn_cast<Index>()) {
-          //   //   LLVM_DEBUG(llvm::dbgs() << ">> Dim expr: " << expr << "\n");
-          //   //   if (expr.getPosition() == 0) {
-          //   //     LLVM_DEBUG(llvm::dbgs() << ">> Swapping 0 and 1");
-          //   //     std::swap(map[0], map[1]);
-          //   //     break;
-          //   //   }
-          //   // }
-          // }
+          alignedCurrent = isIMapAligned(aop.getIndices());
+          ////
         } else if (auto aop = dyn_cast<AffineStoreOp>(op)) {
-          //
+          LLVM_DEBUG(llvm::dbgs()
+                     << ">> Found an affine store expr: " << aop << "\n");
+          alignedCurrent = isIMapAligned(aop.getIndices());
+        }
+        if (!alignedCurrent) {
+          aligned = false;
+          break;
         }
       }
+      if (!aligned || !imapBaseLine.filled) {
+        LLVM_DEBUG(llvm::dbgs() << ">> Not aligned, skipping\n");
+        return;
+      }
 
-      // Hardcoded for now :(
-      std::swap(map[0], map[1]);
+      // Changing the loop interleaving map.
+      auto &imap = imapBaseLine.map;
+      for (unsigned int i = 0; i < imap.size(); i++) {
+        map[imap[i]] = i;
+      }
 
+      // Final output.
+      LLVM_DEBUG(llvm::dbgs() << ">> Final map: \n");
+      for (unsigned int i = 0; i < map.size(); i++) {
+        LLVM_DEBUG(llvm::dbgs() << ">> " << i << " -> " << map[i] << "\n");
+      }
+
+      // Check if the result permutation is valid.
       if (isValidLoopInterchangePermutation(loops, map)) {
         LLVM_DEBUG(llvm::dbgs() << ">> Valid to permute, but only if there are "
                                    "no function calls/issues! \n");
@@ -131,8 +194,8 @@ void AffineLoopInterleave::runOnOperation() {
         LLVM_DEBUG(llvm::dbgs() << ">> Can't permute :( \n");
       }
     } else {
-      LLVM_DEBUG(llvm::dbgs()
-                 << ">> Operation is not a loop: " << op->getName() << "\n");
+      // LLVM_DEBUG(llvm::dbgs()
+      //            << ">> Operation is not a loop: " << op->getName() << "\n");
     }
   });
 }
